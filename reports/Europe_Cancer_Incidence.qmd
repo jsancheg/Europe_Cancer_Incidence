@@ -1,0 +1,91 @@
+---
+title: "Forecasting cancer incidences across sexes and age cohorts in Europe"
+author: "Jorge Sánchez"
+format: html
+bibliography: /home/jsancheg/git_environment/Europe_Cancer_Incidence/references/CancerIncidence.bib
+csl: /home/jsancheg/git_environment/Europe_Cancer_Incidence/references/chicago-author-date-classic.csl
+editor: visual
+execute:
+  dir: project
+---
+
+```{r}
+#| label: calling-libraries
+#| echo: false
+#| message: false
+#| warnings: false
+#| results: hide
+library(tidyverse)
+library(magick)
+```
+
+## Introduction
+
+The CI5 summary database provides access to the incidence of cancer recorded by cancer classification, continent, country, region, and age groups. This information is helpful to understand, monitor, and forecast the cancer incidence trends by sex, age group, and cancer classification in Europe. The present report provides firstly a data analysis of the volume of cases and distribution across sexes and age groups and secondly a description of the methodology use to build a forecast of cancer incidences by cancer classification, sex, and age group. However, the main focus of the report is on analysing and forecasting the incidence of cancer cases in Europe and acknowledging the complexities and limitations of a short-range forecast.
+
+## Cancer incidences trend in Europe
+
+There are aspects to be considered before analysing the CI5 summary database such as countries having starting records of their cancer incidences at different years. For example, Denmark is one of the countries with the earliest recording of its cancer incidences in 1953, while other countries like Malta and Ireland started reporting cancer incidences in 1993 and 1994 respectively. In 2003, all european countries in the CI5 summary database have at least one year reported of their cancer incidences. One of the main factors contributing to the growth of the cancer incidence reported before 2003 is due to the increase of the number countries contributing with their cancer incidence records to the CI5 databases. Another important reason of the increase in cancer incidence is the aging of the European population [@boyle_cancer_2005].
+
+In Figure 1, it is possible to see a steady increase in the incidence of cancer for both sexes over time. There is notable sharp upturn around 1970 for both sexes, where cancer incidence begin climbing steady after decades of stability. This likely reflects improved cancer detection methods, better reporting systems [@ferlay2007], and possibly increase exposure to various risk factors.
+
+The number of cancer incidence in European males (orange line) is higher than females (blue line) throughout the entire period. The gap between the two widens over time, particularly after 1970. From 1970 to 2015, cancer incidence quintupled for both sexes, representing a significant public health trend that could be attributed to aging population [@ferlay2007], improved diagnostic, lifestyle factors, and environmental changes.
+
+\
+
+```{r}
+#| label: fig-incidence-by-sex
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig.width: 10
+#| fig.height: 7
+#| out-width: "100%"
+
+img <- image_read("/home/jsancheg/git_environment/Europe_Cancer_Incidence/reports/figures/Cancer_incidence_by_sex.png")
+img_annotated <- image_annotate(img, "", size = 28, color = "black", location = "+10+10")
+
+plot(img_annotated)
+
+
+```
+
+In Figure 2, the cancer incidences from 2007 to 2017 is shown by age groups and cancer classification type. It is clear that the incidence cases show a steady increase since the age group 25-29, reaching its peak at the age-group 65-69. The
+
+```{r}
+#| label: fig-incidence-by-age-group
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+#| fig.width: 10
+#| fig.height: 7
+#| out-width: "100%"
+
+img2 <- image_read("/home/jsancheg/git_environment/Europe_Cancer_Incidence/reports/figures/Cancer_incidence_ by_cance_classification_age_groups_2007 _2017.png")
+img_annotated2 <- image_annotate(img2, "", size = 28, color = "black", location = "+10+10")
+
+plot(img_annotated2)
+
+
+```
+
+## Methodology
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+## Results
