@@ -1,5 +1,23 @@
 import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller, kpss
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.stats.diagnostic import acorr_ljungbox
+
+
+# Custom function to replace the missing R function
+def filtering_item(df, item):
+    """
+    Simulates the filtering_item function by filtering the DataFrame
+    based on 'cancer_classification', 'sex_character', and 'age_group'.
+    """
+    # Assuming item is a pandas Series or single-row DataFrame from item_id
+    filtered_df = df[
+        (df['cancer_classification'] == item['cancer_classification'].iloc[0]) &
+        (df['sex_character'] == item['sex_character'].iloc[0]) &
+        (df['age_group'] == item['age_group'].iloc[0])
+    ].copy()
+    return filtered_df
+
 
 
 def plot_serie(ts_data, title, xlabel, ylabel):
@@ -25,7 +43,7 @@ def descriptive_statistics(ts_data):
 
     return ds_dict
 
-def chequear_estacionaridad2(serie):
+def chequear_estacionaridad(serie):
     print("===== Stationary Tests =======")
     adf_result = adfuller(serie, autolag='AIC')
     adf_stat = adf_result[0]
@@ -57,3 +75,26 @@ def chequear_estacionaridad2(serie):
     
     return resumen    
 
+def chequear_autocorrelacion(serie, alpha = 0.05):
+    print("=== Autocorrelation Analysis ===\n")
+
+    # 5.1 ACF and PACF plots
+    #
+    fig, axes = plt.subplots(2, 1, figsize=(10, 6))
+    plot_acf(serie, lags=min(20, len(serie)//2 - 1), ax=axes[0], title="Autocorrelation Function (ACF)")
+    plot_pacf(serie, lags=min(20, len(serie)//2 - 1), ax=axes[1], title="Partial Autocorrelation Function (PACF)")
+    plt.tight_layout()
+    #plt.show()
+
+    # 5.2 Ljung-Box Test for autocorrelation
+    print("--- Ljung-Box Test (lag = 10) ---")
+    # statsmodels' acorr_ljungbox returns a DataFrame, lag is the number of lags tested.
+    lb_result = acorr_ljungbox(serie, lags=[10])
+    lb_stat = lb_result.loc[10, 'lb_stat']
+    lb_pvalue = lb_result.loc[10, 'lb_pvalue']
+    print(f"Chi-squared: {lb_stat:.4f}")
+    print(f"P-value: {lb_pvalue:.4f}")
+    lb_interpretation = "Significant autocorrelation detected" if lb_pvalue < 0.05 else "No significant autocorrelation"
+    print(f"Interpretation: {lb_interpretation}\n")
+    lb_result['interpretacion'] = lb_interpretation
+    return fig, axes, lb_result

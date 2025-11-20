@@ -1,6 +1,6 @@
 
 from statsmodels.tsa.stattools import adfuller, kpss
-def chequear_estacionaridad(serie):
+def chequear_estacionaridad1(serie):
     print("===== Stationary Tests =======")
     adf_result = adfuller(serie, autolag='AIC')
     adf_stat = adf_result[0]
