@@ -1,7 +1,10 @@
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller, kpss
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.stats.diagnostic import acorr_ljungbox
+from io import StringIO
 
 
 # Custom function to replace the missing R function
@@ -75,7 +78,7 @@ def chequear_estacionaridad(serie):
     
     return resumen    
 
-def chequear_autocorrelacion(serie, alpha = 0.05):
+def chequear_autocorrelacion(serie, alpha = 0.05, number_lags = 10):
     print("=== Autocorrelation Analysis ===\n")
 
     # 5.1 ACF and PACF plots
@@ -89,7 +92,7 @@ def chequear_autocorrelacion(serie, alpha = 0.05):
     # 5.2 Ljung-Box Test for autocorrelation
     print("--- Ljung-Box Test (lag = 10) ---")
     # statsmodels' acorr_ljungbox returns a DataFrame, lag is the number of lags tested.
-    lb_result = acorr_ljungbox(serie, lags=[10])
+    lb_result = acorr_ljungbox(serie, lags=[number_lags])
     lb_stat = lb_result.loc[10, 'lb_stat']
     lb_pvalue = lb_result.loc[10, 'lb_pvalue']
     print(f"Chi-squared: {lb_stat:.4f}")
@@ -97,4 +100,95 @@ def chequear_autocorrelacion(serie, alpha = 0.05):
     lb_interpretation = "Significant autocorrelation detected" if lb_pvalue < 0.05 else "No significant autocorrelation"
     print(f"Interpretation: {lb_interpretation}\n")
     lb_result['interpretacion'] = lb_interpretation
+    
     return fig, axes, lb_result
+
+def calculate_rolling_statistics(serie, window_size = None):
+    print("\n=== Rolling Statistics Analysis ===")
+
+    warning =  ""
+    recommendation = ""
+    variance_check_result = ""
+
+    # Calculate rolling mean and standard deviation
+    if window_size is None:
+        window_size = min(5, len(serie) // 3)
+
+    rolling_mean = serie.rolling(window = window_size).mean()
+    rolling_sd = serie.rolling(window = window_size).std()
+
+
+    fig, axes = plt.subplots(2,1, figsize = (10, 8))
+
+    # Plot 1: Time Series and Rolling Mean
+    serie.plot(ax = axes[0],
+               label = 'Original',
+               linewidth = 0.8,
+               color = 'steelblue',
+               marker = 'o'
+               )
+    rolling_mean.plot(ax = axes[0],
+                      label = 'Rolling Mean',
+                      linewidth = 1.2,
+                      color = 'darkorange'
+                      )
+    axes[0].set_title(f"Time series with {window_size}--Period Rolling Mean")
+    axes[0].set_xlabel('Time')
+    axes[0].set_ylabel('Cases')
+    axes[0].legend(title = 'Series')
+    axes[0].grid(True, linestyle = '--', alpha = 0.6)
+
+    # Plot 2: Rolling Standard Deviation
+    rolling_sd.plot(ax = axes[1],
+                    linewidth = 1,
+                    color = 'darkred'
+                    )
+    axes[1].set_title(f"{window_size}--Period Standard Deviation")
+    axes[1].set_xlabel('Time')
+    axes[1].set_ylabel('Standard Deviation')
+    axes[1].grid(True, linestyle = '--', alpha = 0.6)
+
+    plt.tight_layout()
+
+    # Test for changing variance
+    print("\nVariance stability check:")
+    half_len = len(serie) // 2
+    first_half_var = serie.iloc[:half_len].var()
+    second_half_var = serie.iloc[half_len:].var()
+    if first_half_var > 0:
+        variance_ratio = second_half_var / first_half_var
+        print(f"Variance ratio: {variance_ratio:.2f}")
+        if np.abs(np.log(variance_ratio)) > 0.5:
+            warning = "WARNING: Variance appears to be changing over time"
+            print(f"{warning}\n")
+            recommendation = "RECOMMENDATION: Consider log transformation or variance stabilization"
+            print(f"{recommendation}")
+        else:
+            variance_check_result = "Variance ratio is within acceptable limits."
+    else:
+        variance_check_result = "Cannot compute variance ratio (First half variance is zero or negative"
+
+    if variance_check_result:
+        print("-"*30)
+        print(variance_check_result)
+
+    
+
+    df_rolling = pd.DataFrame({'window_size': [window_size],
+                               'half_len': [half_len],
+                               'first_half_var': [first_half_var],
+                               'second_half_var':[second_half_var],
+                               'variance_ratio': [variance_ratio],
+                               'warning':[warning],
+                               'recommendation':[recommendation],
+                               'variance_check_result': [variance_check_result]})
+
+    return fig, axes, rolling_mean, rolling_sd, df_rolling
+
+
+
+
+
+
+
+    
