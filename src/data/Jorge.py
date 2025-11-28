@@ -16,5 +16,5 @@ def chequear_estacionaridad1(serie):
     return adf_resumen    
 
 
-
+def 
 
